@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 2.6 2003-12-13 16:13:25-05 kingpin Exp kingpin $
+# $Id: WashPost.pm,v 2.72 2004/02/07 13:42:25 Daddy Exp $
 
 =head1 NAME
 
@@ -61,7 +61,8 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = sprintf("%d.%02d", q$Revision: 2.6 $ =~ /(\d+)\.(\d+)/o);
+
+$VERSION = do { my @r = (q$Revision: 2.72 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;

@@ -1,3 +1,11 @@
+2004-02-07  Kingpin  <mthurn@verizon.net>
+
+	* lib/WWW/Search/WashPost.pm: updated the version number
+
+2003-12-16  Kingpin  <mthurn@verizon.net>
+
+	* lib/WWW/Search/News.pm: new file
+
 2003-12-13  Kingpin  <mthurn@verizon.net>
 
 	* t/washpost.t (my_test): convert to Test::More

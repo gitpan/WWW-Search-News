@@ -10,19 +10,34 @@ my $iDebug = 0;
 my $iDump = 0;
 
 # This test returns no results (but we should not get an HTTP error):
+diag("Sending 0-page query to washingtonpost.com...");
 &my_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
 # goto MULTI_RESULT;
-$iDebug = 0;
 # This query sometimes (rarely) returns 1 page of results:
-&my_test('normal', 'java', 1, 9, $iDebug);
-# goto MULTI_RESULT;
+diag("Sending 1-page query to washingtonpost.com...");
 $iDebug = 0;
+&my_test('normal', 'goose', 1, 9, $iDebug);
+my @ao = $WWW::Search::Test::oSearch->results();
+cmp_ok(0, '<', scalar(@ao), 'got any results');
+foreach my $oResult (@ao)
+  {
+  like($oResult->url, qr{\Ahttp://},
+       'result URL is http');
+  cmp_ok($oResult->title, 'ne', '',
+         'result Title is not empty');
+  cmp_ok($oResult->description, 'ne', '',
+         'result description is not empty');
+  cmp_ok($oResult->change_date, 'ne', '',
+         'result change_date is not empty');
+  } # foreach
+# goto MULTI_RESULT;
 
 MULTI_RESULT:
 ;
 TODO:
   {
-  local $TODO = q{www.washingtonpost.com's 'Next' button is broken};
+  # local $TODO = q{www.washingtonpost.com's 'Next' button is broken};
+  diag("Sending multi-page query to washingtonpost.com...");
   $iDebug = 0;
   $iDump = 0;
   # This query returns MANY pages of results:
@@ -44,6 +59,10 @@ sub my_test
   my $iCount = &WWW::Search::Test::count_results(@_);
   cmp_ok($iMin, '<=', $iCount, qq{lower-bound num-hits for query=$sQuery}) if defined $iMin;
   cmp_ok($iCount, '<=', $iMax, qq{upper-bound num-hits for query=$sQuery}) if defined $iMax;
+  cmp_ok($iMin, '<=', $WWW::Search::Test::oSearch->approximate_result_count,
+         qq{lower-bound approximate_result_count}) if defined $iMin;
+  cmp_ok($WWW::Search::Test::oSearch->approximate_result_count, '<=', $iMax,
+         qq{upper-bound approximate_result_count}) if defined $iMax;
   } # my_test
 
 __END__
