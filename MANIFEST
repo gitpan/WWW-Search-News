@@ -1,8 +1,9 @@
 ChangeLog
-MANIFEST
-Makefile.PL
-README
 lib/WWW/Search/AP.pm
 lib/WWW/Search/WashPost.pm
+Makefile.PL
+MANIFEST			This list of files
+README
 t/ap.t
 t/washpost.t
+META.yml                                 Module meta-data (added by MakeMaker)

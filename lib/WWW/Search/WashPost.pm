@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 1.5 2002/12/27 20:32:06 mthurn Exp $
+# $Id: WashPost.pm,v 2.6 2003-12-13 16:13:25-05 kingpin Exp kingpin $
 
 =head1 NAME
 
@@ -48,15 +48,7 @@ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 =head1 VERSION HISTORY
 
-If it is not listed here, then it was not a meaningful nor released revision.
-
-=head2 2.03, 2002-12-27
-
-Updated for new webpage format
-
-=head2 2.01, 2002-03-11
-
-First public release.
+see ChangeLog
 
 =cut
 
@@ -69,7 +61,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = '2.03';
+$VERSION = sprintf("%d.%02d", q$Revision: 2.6 $ =~ /(\d+)\.(\d+)/o);
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -79,7 +71,7 @@ use URI;
 # private
 sub native_setup_search
   {
-  my ($self, $native_query, $native_options_ref) = @_;
+  my ($self, $sQuery, $native_options_ref) = @_;
 
   $self->{_debug} = $native_options_ref->{'search_debug'};
   $self->{_debug} = 2 if ($native_options_ref->{'search_parse_debug'});
@@ -101,10 +93,10 @@ sub native_setup_search
   if (!defined($self->{_options}))
     {
     $self->{_options} = {
-                         'search_url' => 'http://www.washingtonpost.com/cgi-bin/search99.pl',
-                         'description' => $native_query,
-                         'searchdatabase' => 'serf',
-                         'serf_wp' => 'on',
+                         'search_url' => 'http://sitesearch.washingtonpost.com/cgi-bin/search99.pl',
+                         'searchsection' => 'news',
+                         'searchtext' => $sQuery,
+                         'searchdatabase' => 'news',
                         };
     } # if
   my $options_ref = $self->{_options};
@@ -121,8 +113,15 @@ sub native_setup_search
   $self->{_next_url} = $self->{_options}{'search_url'} .'?'. $self->hash_to_cgi_string($options_ref);
   } # native_setup_search
 
-
 my $WS = qr([ \t\r\n\240]);
+
+sub preprocess_results_page_OFF
+  {
+  my $self = shift;
+  my $sPage = shift;
+  print STDERR $sPage if (2 < $self->{_debug});
+  return $sPage;
+  } # preprocess_results_page
 
 sub parse_tree
   {
@@ -150,15 +149,18 @@ sub parse_tree
     } # if 0
 
   # Look for the total hit count:
-  my @aoFONT = $oTree->look_down('_tag', 'font');
+  my @aoFONT = $oTree->look_down(
+                                 '_tag' => 'font',
+                                 'color' => '#000000',
+                                );
  FONT_TAG:
   foreach my $oFONT (@aoFONT)
     {
     if (ref $oFONT)
       {
       my $sFONT = $oFONT->as_text;
-      print STDERR " +   FONT == $sFONT\n" if 2 <= $self->{_debug};
-      if ($sFONT =~ m!(?:\A|\s)([0-9,]+)\s+matches!i)
+      print STDERR " +   try FONT == $sFONT\n" if 2 <= $self->{_debug};
+      if ($sFONT =~ m!(?:\A|\s)([0-9,]+)\s+matches(?:\s|\Z)!i)
         {
         my $sCount = $1;
         # print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
@@ -240,12 +242,12 @@ sub parse_tree
     print STDERR " +   try oAnext ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
     my $oIMG = $oAnext->look_down('_tag', 'img');
     next A_TAG unless ref $oIMG;
-    if (($oIMG->attr('ALT') || 'No ALT') =~ m!Next\sPage!i)
+    if ($oAnext->as_text eq 'Next')
       {
       print STDERR " +   oAnext is ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
       my $sURL = $oAnext->attr('href');
-      $sURL =~ s!&_b.\d+=&!&!g;
-      $sURL =~ s!&_NO_RETURN=1&!&!g;
+      # $sURL =~ s!&_b.\d+=&!&!g;
+      # $sURL =~ s!&_NO_RETURN=1&!&!g;
       $self->{_next_url} = URI->new_abs($sURL, $self->{'_prev_url'});
       last A_TAG;
       } # if

@@ -1,3 +1,12 @@
+2003-12-13  Kingpin  <mthurn@verizon.net>
+
+	* t/washpost.t (my_test): convert to Test::More
+
+	* lib/WWW/Search/AP.pm (native_setup_search): fix CGI arguments
+
+	* lib/WWW/Search/WashPost.pm (native_setup_search): fix CGI arguments
+	(parse_tree): fix 'Next' link pattern
+
 2002-12-27  Kingpin  <mthurn@carbon>
 
 	* lib/WWW/Search/WashPost.pm (parse_tree): updated for new output format

@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 1.2 2002/07/18 21:53:10 mthurn Exp $
+# $Id: AP.pm,v 1.3 2003-12-13 16:13:47-05 kingpin Exp kingpin $
 
 =head1 NAME
 
@@ -74,10 +74,9 @@ sub native_setup_search
   my ($self, $sQuery, $rhOptions) = @_;
   $self->{_options} = {
                        'search_url' => 'http://sitesearch.washingtonpost.com/cgi-bin/search99.pl',
-                       'description' => $sQuery,
-                       'searchdatabase' => 'serf',
-                       'serf_ap' => 'on',
-                       'ap' => 'on',
+                       'searchsection' => 'news',
+                       'searchtext' => $sQuery,
+                       'searchdatabase' => 'ap',
                       };
   $self->SUPER::native_setup_search($sQuery, $rhOptions);
   } # native_setup_search

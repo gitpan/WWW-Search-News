@@ -1,40 +1,49 @@
-
 use ExtUtils::testlib;
-# use WWW::Search;
-use WWW::Search::Test qw( new_engine run_test );
+use Test::More no_plan;
 
-######################### We start with some black magic to print on failure.
+BEGIN { use_ok('WWW::Search') };
+BEGIN { use_ok('WWW::Search::Test') };
+BEGIN { use_ok('WWW::Search::AP') };
 
-# Change 1..1 below to 1..last_test_to_print .
-# (It may become useful if the test is moved to ./t subdirectory.)
-
-# 6 tests without "goto MULTI_RESULT"
-BEGIN { $| = 1; print "1..3\n"; }
-END {print "not ok 1\n" unless $loaded;}
-$loaded = 1;
-
-######################### End of black magic.
-
-# Insert your test code below (better if it prints "ok 13"
-# (correspondingly "not ok 13") depending on the success of chunk 13
-# of the test code):
-
-$WWW::Search::Test::iTest = 0;
-
-&new_engine('AP');
-my $debug = 0;
+&my_engine('AP');
+my $iDebug = 0;
+my $iDump = 0;
 
 # This test returns no results (but we should not get an HTTP error):
-&run_test($WWW::Search::Test::bogus_query, 0, 0, $debug);
-goto MULTI_RESULT;
-$debug = 0;
-# This query usually returns 1 page of results:
-&run_test('perl', 1, 9, $debug);
+&my_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
 # goto MULTI_RESULT;
-$debug = 0;
+$iDebug = 0;
+# This query sometimes (rarely) returns 1 page of results:
+&my_test('normal', 'java', 1, 9, $iDebug);
+# goto MULTI_RESULT;
+$iDebug = 0;
 
 MULTI_RESULT:
-$debug = 0;
-# This query returns hundreds of pages of results:
-&run_test('Japan', 11, undef, $debug);
+;
+TODO:
+  {
+  local $TODO = q{www.washingtonpost.com's 'Next' button is broken};
+  $iDebug = 0;
+  $iDump = 0;
+  # This query returns MANY pages of results:
+  &my_test('normal', 'Japan', 11, undef, $iDebug, $iDump);
+  } # end of TODO block
 
+sub my_engine
+  {
+  my $sEngine = shift;
+  $WWW::Search::Test::oSearch = new WWW::Search($sEngine);
+  ok(ref($WWW::Search::Test::oSearch), "instantiate WWW::Search::$sEngine object");
+  $WWW::Search::Test::oSearch->env_proxy('yes');
+  } # my_engine
+
+sub my_test
+  {
+  # Same arguments as WWW::Search::Test::count_results()
+  my ($sType, $sQuery, $iMin, $iMax, $iDebug, $iPrintResults) = @_;
+  my $iCount = &WWW::Search::Test::count_results(@_);
+  cmp_ok($iMin, '<=', $iCount, qq{lower-bound num-hits for query=$sQuery}) if defined $iMin;
+  cmp_ok($iCount, '<=', $iMax, qq{upper-bound num-hits for query=$sQuery}) if defined $iMax;
+  } # my_test
+
+__END__
