@@ -1,7 +1,10 @@
-News.pm
-Makefile.PL
-t/test.t
-README
-INSTALL
-CHANGES
 MANIFEST
+Makefile.PL
+lib/WWW/Search/AP.pm
+lib/WWW/Search/Newsbytes.pm
+lib/WWW/Search/WashPost.pm
+lib/WWW/Search/WashTech.pm
+t/ap.t
+t/newsbytes.t
+t/washpost.t
+t/washtech.t
