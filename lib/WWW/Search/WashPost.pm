@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 2.74 2004/05/23 03:15:53 Daddy Exp $
+# $Id: WashPost.pm,v 2.75 2004/06/05 23:30:10 Daddy Exp $
 
 =head1 NAME
 
@@ -64,7 +64,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = do { my @r = (q$Revision: 2.74 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.75 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -100,7 +100,7 @@ sub native_setup_search
                          'tab' => 'article_tab',
                          'keywords' => $sQuery,
                          'adv' => 'a',
-                         'source' => 'Post',
+                         'source' => 'washingtonpost.com',
                         };
     } # if
   my $options_ref = $self->{_options};

@@ -22,7 +22,7 @@ TODO:
   diag("Sending 1-page query to washingtonpost.com...");
   $iDebug = 0;
   # This query usually returns 1 page of results:
-  &my_test('normal', 'Star Wars', 1, 9, $iDebug);
+  &my_test('normal', '"Star Wars"', 1, 9, $iDebug);
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -36,7 +36,7 @@ foreach my $oResult (@ao)
          'result description is not empty');
   cmp_ok($oResult->change_date, 'ne', '',
          'result change_date is not empty');
-  is($oResult->source, '(The Washington Post)', 'source is WashPost');
+  like($oResult->source, qr(The Washington Post|washingtonpost.com), 'source is WashPost');
   } # foreach
 
 MULTI_RESULT:

@@ -1,3 +1,7 @@
+2004-06-05  Kingpin  <mthurn@verizon.net>
+
+	* lib/WWW/Search/WashPost.pm (native_setup_search): fixed for new CGI option value for 'source'
+
 2004-05-22  Kingpin  <mthurn@verizon.net>
 
 	* t/reuters.t: new file

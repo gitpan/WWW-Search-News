@@ -29,7 +29,7 @@ Martin Thurn
 package WWW::Search::News;
 
 use vars qw( $VERSION );
-$VERSION = '1.071';
+$VERSION = '1.072';
 
 1;
 

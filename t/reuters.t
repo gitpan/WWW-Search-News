@@ -8,18 +8,21 @@ BEGIN { use_ok('WWW::Search::Reuters') };
 &my_engine('Reuters');
 my $iDebug = 0;
 my $iDump = 0;
+# goto TEST_NOW;
 
 # This test returns no results (but we should not get an HTTP error):
 diag("Sending 0-page Reuters query to washingtonpost.com...");
 &my_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
 # goto MULTI_RESULT;
+TEST_NOW:
+;
 TODO:
   {
   local $TODO = q{too hard to find a reliable one-page query};
   # This query sometimes (rarely) returns 1 page of results:
   diag("Sending 1-page Reuters query to washingtonpost.com...");
   $iDebug = 0;
-  &my_test('normal', 'goose', 1, 9, $iDebug);
+  &my_test('normal', 'crane', 1, 9, $iDebug);
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
