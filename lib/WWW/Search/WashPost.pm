@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 2.75 2004/06/05 23:30:10 Daddy Exp $
+# $Id: WashPost.pm,v 2.77 2005/02/20 02:42:32 Daddy Exp $
 
 =head1 NAME
 
@@ -64,7 +64,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = do { my @r = (q$Revision: 2.75 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.77 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -133,51 +133,49 @@ sub parse_tree
   my $oTree = shift;
   my $hits_found = 0;
   # Look for the total hit count:
-  my @aoFONTcount = $oTree->look_down(
-                                      '_tag' => 'font',
-                                      'face' => 'arial,verdana,helvetica',
+  my @aoSPANcount = $oTree->look_down(
+                                      '_tag' => 'span',
                                      );
- COUNT_FONT_TAG:
-  foreach my $oFONT (@aoFONTcount)
+ COUNT_SPAN_TAG:
+  foreach my $oSPAN (@aoSPANcount)
     {
-    if (ref $oFONT)
+    if (ref $oSPAN)
       {
-      my $sFONT = $oFONT->as_text;
-      print STDERR " +   try FONT == $sFONT\n" if 2 <= $self->{_debug};
-      if ($sFONT =~ m!\bsearch$WS+returned$WS+([0-9,]+)$WS+results!i)
+      my $sSPAN = $oSPAN->as_text;
+      print STDERR " +   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
+      if ($sSPAN =~ m!\breturned$WS+([0-9,]+)$WS+result!i)
         {
         my $sCount = $1;
-        # print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
+        print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
         $sCount =~ s!,!!g;
         # print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
         $self->approximate_result_count($sCount);
-        last COUNT_FONT_TAG;
+        last COUNT_SPAN_TAG;
         } # if
       } # if
-    } # foreach COUNT_FONT_TAG
+    } # foreach COUNT_SPAN_TAG
   $oTree->objectify_text;
   # Find all the results:
-  my @aoFONT = $oTree->look_down(
-                                 _tag => 'font',
-                                 face => 'arial,verdana',
-                                 size => '-1',
+  my @aoSPAN = $oTree->look_down(
+                                 _tag => 'span',
+                                 style => 'font-family: Arial; font-size: 13px; font-weight: bold;',
                                 );
- FONT_TAG:
-  foreach my $oFONT (@aoFONT)
+ SPAN_TAG:
+  foreach my $oSPAN (@aoSPAN)
     {
-    next FONT_TAG unless ref $oFONT;
-    print STDERR " +   try oFONT ===", $oFONT->as_HTML, "===\n" if (2 <= $self->{_debug});
-    my $oA = $oFONT->look_down('_tag', 'a',
+    next SPAN_TAG unless ref $oSPAN;
+    print STDERR " +   try oSPAN ===", $oSPAN->as_HTML, "===\n" if (2 <= $self->{_debug});
+    my $oA = $oSPAN->look_down('_tag', 'a',
                                # Make sure we have a clickable article ref:
                                sub { $_[0]->attr('href') =~ m!/articles/! },
                               );
-    next FONT_TAG unless ref $oA;
+    next SPAN_TAG unless ref $oA;
     my $sURL = $oA->attr('href');
     $oA->deobjectify_text;
     my $sTitle = &strip($oA->as_text);
     print STDERR " +     found <A>, url=$sURL=\n" if (2 <= $self->{_debug});
     print STDERR " +              title=$sTitle=\n" if (2 <= $self->{_debug});
-    my $oByline = $oFONT->right->right;
+    my $oByline = $oSPAN->right->right;
     my $sSource = '';
     if (ref $oByline)
       {
@@ -187,7 +185,7 @@ sub parse_tree
       } # if
     else
       {
-      next FONT_TAG;
+      next SPAN_TAG;
       }
     my $oDate = $oByline->right->right;
     my $sDate = '';
@@ -195,14 +193,16 @@ sub parse_tree
       {
       $oDate->deobjectify_text;
       $sDate = &strip($oDate->as_text);
-      print STDERR " +     found date=$sDate=\n" if (2 <= $self->{_debug});
+      print STDERR " +     raw    date=$sDate=\n" if (2 <= $self->{_debug});
+      $sDate =~ s!By\s+[^,]+,\s+!!i;
+      print STDERR " +     cooked date=$sDate=\n" if (2 <= $self->{_debug});
       } # if
     else
       {
-      next FONT_TAG;
+      next SPAN_TAG;
       }
     my $oDesc = $oDate->right->right;
-    next FONT_TAG unless ref $oDesc;
+    next SPAN_TAG unless ref $oDesc;
     $oDesc->deobjectify_text;
     my $sDesc = &strip($oDesc->as_text);
     my $hit = new WWW::SearchResult;
@@ -214,7 +214,7 @@ sub parse_tree
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
     $hits_found++;
-    } # foreach FONT_TAG
+    } # foreach SPAN_TAG
 
   $oTree->deobjectify_text;
   # Find the next link, if any:

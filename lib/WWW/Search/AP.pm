@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 2.103 2004/05/23 03:15:47 Daddy Exp $
+# $Id: AP.pm,v 2.104 2005/02/19 23:29:42 Daddy Exp $
 
 =head1 NAME
 
@@ -68,7 +68,7 @@ use WWW::Search::WashPost;
 
 @ISA = qw( WWW::Search::WashPost );
 
-$VERSION = do { my @r = (q$Revision: 2.103 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.104 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 # private
@@ -83,3 +83,4 @@ sub native_setup_search
 1;
 
 __END__
+
