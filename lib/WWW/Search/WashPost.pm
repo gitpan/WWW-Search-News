@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 1.3 2002/03/12 21:05:59 mthurn Exp mthurn $
+# $Id: WashPost.pm,v 1.5 2002/12/27 20:32:06 mthurn Exp $
 
 =head1 NAME
 
@@ -50,6 +50,10 @@ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 If it is not listed here, then it was not a meaningful nor released revision.
 
+=head2 2.03, 2002-12-27
+
+Updated for new webpage format
+
 =head2 2.01, 2002-03-11
 
 First public release.
@@ -65,7 +69,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = '2.02';
+$VERSION = '2.03';
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -167,19 +171,18 @@ sub parse_tree
     } # foreach $oFONT
 
   # Find all the results:
-  my @aoTABLE = $oTree->look_down('_tag', 'table',
-                                  sub { ref($_[0]) &&
-                                        defined($_[0]->attr('width')) &&
-                                        ($_[0]->attr('width') eq 468) },
-                                   );
+  my @aoTABLE = $oTree->look_down(
+                                  '_tag' => 'table',
+                                  'width' => '100%',
+                                 );
  TABLE_TAG:
   foreach my $oTABLE (@aoTABLE)
     {
     next TABLE_TAG unless ref $oTABLE;
     print STDERR " +   try oTABLE ===", $oTABLE->as_text, "===\n" if 2 <= $self->{_debug};
     my $oA = $oTABLE->look_down('_tag', 'a',
-                                  sub { ref $_[0] && ($_[0]->attr('href') =~ m!/articles/!) },
-                            );
+                                sub { ref $_[0] && ($_[0]->attr('href') =~ m!/articles/!) },
+                               );
     # Make sure we have a clickable article ref:
     next TABLE_TAG unless ref $oA;
     my $sURL = $oA->attr('href');
@@ -231,22 +234,22 @@ sub parse_tree
   # Find the next link, if any:
   my @aoA = $oTree->look_down('_tag', 'a');
  A_TAG:
-  foreach my $oA (@aoA)
+  foreach my $oAnext (@aoA)
     {
-    next A_TAG unless ref $oA;
-    print STDERR " +   try oA ===", $oA->as_HTML, "===\n" if 2 <= $self->{_debug};
-    my $oIMG = $oA->look_down('_tag', 'img');
+    next A_TAG unless ref $oAnext;
+    print STDERR " +   try oAnext ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
+    my $oIMG = $oAnext->look_down('_tag', 'img');
     next A_TAG unless ref $oIMG;
     if (($oIMG->attr('ALT') || 'No ALT') =~ m!Next\sPage!i)
       {
-      print STDERR " +   oAnext is ===", $oA->as_HTML, "===\n" if 2 <= $self->{_debug};
-      my $sURL = $oA->attr('href');
+      print STDERR " +   oAnext is ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
+      my $sURL = $oAnext->attr('href');
       $sURL =~ s!&_b.\d+=&!&!g;
       $sURL =~ s!&_NO_RETURN=1&!&!g;
       $self->{_next_url} = URI->new_abs($sURL, $self->{'_prev_url'});
       last A_TAG;
       } # if
-    } # foreach $oA
+    } # foreach $oAnext
 
  SKIP_NEXT_LINK:
 

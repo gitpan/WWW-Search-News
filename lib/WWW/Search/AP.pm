@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 1.1 2002/03/12 21:05:00 mthurn Exp mthurn $
+# $Id: AP.pm,v 1.2 2002/07/18 21:53:10 mthurn Exp $
 
 =head1 NAME
 

@@ -1,4 +1,11 @@
+2002-12-27  Kingpin  <mthurn@carbon>
+
+	* lib/WWW/Search/WashPost.pm (parse_tree): updated for new output format
+
 2002-07-18  Kingpin  <mthurn@copper.dulles.tasc.com>
+
+	* lib/WWW/Search/WashPost.pm (parse_tree): remove undef warnings
+	(native_setup_search): use non-robot UserAgent
 
 	* delete WashTech.pm because website no longer exists
 
