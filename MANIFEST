@@ -1,10 +1,8 @@
+ChangeLog
 MANIFEST
 Makefile.PL
+README
 lib/WWW/Search/AP.pm
-lib/WWW/Search/Newsbytes.pm
 lib/WWW/Search/WashPost.pm
-lib/WWW/Search/WashTech.pm
 t/ap.t
-t/newsbytes.t
 t/washpost.t
-t/washtech.t

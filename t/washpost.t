@@ -9,7 +9,7 @@ use WWW::Search::Test qw( new_engine run_test );
 # (It may become useful if the test is moved to ./t subdirectory.)
 
 # 6 tests without "goto MULTI_RESULT"
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN { $| = 1; print "1..3\n"; }
 END {print "not ok 1\n" unless $loaded;}
 $loaded = 1;
 
@@ -26,7 +26,7 @@ my $debug = 0;
 
 # This test returns no results (but we should not get an HTTP error):
 &run_test($WWW::Search::Test::bogus_query, 0, 0, $debug);
-# goto MULTI_RESULT;
+goto MULTI_RESULT;
 $debug = 0;
 # This query usually returns 1 page of results:
 &run_test('Star Wars', 1, 9, $debug);

@@ -1,0 +1,11 @@
+2002-07-18  Kingpin  <mthurn@copper.dulles.tasc.com>
+
+	* delete WashTech.pm because website no longer exists
+
+	* delete t/washtech.t
+		
+	* delete Newsbytes.pm because website no longer exists
+	
+	* delete t/newsbytes.t
+
+	

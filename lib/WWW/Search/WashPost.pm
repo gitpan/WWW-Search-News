@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 1.3 2002/03/12 21:05:59 mthurn Exp $
+# $Id: WashPost.pm,v 1.3 2002/03/12 21:05:59 mthurn Exp mthurn $
 
 =head1 NAME
 
@@ -65,7 +65,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = '2.01';
+$VERSION = '2.02';
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -87,7 +87,7 @@ sub native_setup_search
   # $self->timeout(120);  # use this if website is slow
 
   # Use this if website refuses robots:
-  # $self->user_agent('non-robot');
+  $self->user_agent('non-robot');
   # Use this if website mucks up page format depending on browser:
   $self->{'agent_name'} = 'Mozilla/4.76';
 
@@ -168,7 +168,9 @@ sub parse_tree
 
   # Find all the results:
   my @aoTABLE = $oTree->look_down('_tag', 'table',
-                                  sub { ref $_[0] && ($_[0]->attr('width') eq 468) },
+                                  sub { ref($_[0]) &&
+                                        defined($_[0]->attr('width')) &&
+                                        ($_[0]->attr('width') eq 468) },
                                    );
  TABLE_TAG:
   foreach my $oTABLE (@aoTABLE)

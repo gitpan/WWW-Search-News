@@ -1,9 +1,9 @@
 use ExtUtils::MakeMaker;
 WriteMakefile(
               'NAME' => 'WWW::Search::News',
-              'VERSION' => 1.01,
+              'VERSION' => 1.02,
               'PREREQ_PM' => {
-                              'WWW::Search::Test' => 2.16,
+                              'WWW::Search::Test' => 2.22,
                               'URI' => 0,
                              },
              );

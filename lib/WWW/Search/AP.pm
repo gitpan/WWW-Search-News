@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 1.1 2002/03/12 21:05:00 mthurn Exp $
+# $Id: AP.pm,v 1.1 2002/03/12 21:05:00 mthurn Exp mthurn $
 
 =head1 NAME
 
@@ -73,7 +73,7 @@ sub native_setup_search
   {
   my ($self, $sQuery, $rhOptions) = @_;
   $self->{_options} = {
-                       'search_url' => 'http://www.washingtonpost.com/cgi-bin/search99.pl',
+                       'search_url' => 'http://sitesearch.washingtonpost.com/cgi-bin/search99.pl',
                        'description' => $sQuery,
                        'searchdatabase' => 'serf',
                        'serf_ap' => 'on',
@@ -88,3 +88,5 @@ sub native_setup_search
 __END__
 
 http://www.washingtonpost.com/cgi-bin/search99.pl?searchdatabase=serf&serf_ap=on&ap=on&description=microsoft+eu+concessions&headline=&_u.16=14
+
+http://sitesearch.washingtonpost.com/cgi-bin/search99.pl?searchdatabase=serf&serf_ap=on&ap=on&description=%22World+Cup%22&headline=&_u.16=14
