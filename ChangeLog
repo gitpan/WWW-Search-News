@@ -1,3 +1,19 @@
+2004-05-22  Kingpin  <mthurn@verizon.net>
+
+	* t/reuters.t: new file
+
+	* lib/WWW/Search/Reuters.pm: new file
+
+	* lib/WWW/Search/AP.pm (native_setup_search): all new CGI params
+
+	* lib/WWW/Search/WashPost.pm (native_setup_search): all new URL and CGI params
+	(parse_tree): all new HTML format
+
+2004-02-20  Kingpin  <mthurn@verizon.net>
+
+	* t/ap.t: make 1-page queries TODO, because they're unreliable
+	* t/washpost.t: make 1-page queries TODO, because they're unreliable
+
 2004-02-07  Kingpin  <mthurn@verizon.net>
 
 	* lib/WWW/Search/WashPost.pm: updated the version number

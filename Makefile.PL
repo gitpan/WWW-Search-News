@@ -5,10 +5,9 @@ version_from('lib/WWW/Search/News.pm');
 author('Martin Thurn <mthurn@cpan.org>');
 license('perl');
 
-requires(perl => 5.004);
+requires(perl => 5.005);  # only because Module::Install does
 requires('WWW::Search::Test' => 2.22);
 requires('URI');
-include_deps('Test::More', 5.004);
 build_requires('Test::More');
 
 check_nmake();      # check and download nmake.exe for Win32

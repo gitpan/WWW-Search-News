@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 2.72 2004/02/07 13:42:25 Daddy Exp $
+# $Id: WashPost.pm,v 2.74 2004/05/23 03:15:53 Daddy Exp $
 
 =head1 NAME
 
@@ -27,9 +27,12 @@ be done through L<WWW::Search> objects.
 
 =head1 SEE ALSO
 
-To make new back-ends, see L<WWW::Search>.
+To make new backends, see L<WWW::Search>.
 
 =head1 CAVEATS
+
+This backend (and all its subclasses) only searches news stories from
+the last 14 days.
 
 =head1 BUGS
 
@@ -61,15 +64,13 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-
-$VERSION = do { my @r = (q$Revision: 2.72 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.74 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
 use WWW::SearchResult;
 use URI;
 
-# private
 sub native_setup_search
   {
   my ($self, $sQuery, $native_options_ref) = @_;
@@ -93,11 +94,13 @@ sub native_setup_search
 
   if (!defined($self->{_options}))
     {
+    # As of 2004-05-22, URL is http://www.washingtonpost.com/ac2/wp-dyn/Search?tab=article_tab&adv=a&keywords=japan&source=APOnline
     $self->{_options} = {
-                         'search_url' => 'http://sitesearch.washingtonpost.com/cgi-bin/search99.pl',
-                         'searchsection' => 'news',
-                         'searchtext' => $sQuery,
-                         'searchdatabase' => 'news',
+                         'search_url' => 'http://www.washingtonpost.com/ac2/wp-dyn/Search',
+                         'tab' => 'article_tab',
+                         'keywords' => $sQuery,
+                         'adv' => 'a',
+                         'source' => 'Post',
                         };
     } # if
   my $options_ref = $self->{_options};
@@ -114,8 +117,6 @@ sub native_setup_search
   $self->{_next_url} = $self->{_options}{'search_url'} .'?'. $self->hash_to_cgi_string($options_ref);
   } # native_setup_search
 
-my $WS = qr([ \t\r\n\240]);
-
 sub preprocess_results_page_OFF
   {
   my $self = shift;
@@ -124,138 +125,118 @@ sub preprocess_results_page_OFF
   return $sPage;
   } # preprocess_results_page
 
+my $WS = q{[\t\r\n\240\ ]};
+
 sub parse_tree
   {
   my $self = shift;
   my $oTree = shift;
   my $hits_found = 0;
-  if (0)
-    {
-    # To speed up the rest of the parsing, delete all the headers and menus:
-    my @aoTABLE = $oTree->look_down('_tag', 'table');
- TABLE:
-    do
-      {
-      my $oTABLE = shift @aoTABLE;
-      my $iWidth = $oTABLE->attr('width') || 'undefined';
-      if ($iWidth eq 428)
-        {
-        print STDERR " + found a tree whose width is $iWidth!\n" if 2 <= $self->{_debug};
-        last TABLE;
-        } # if
-      print STDERR " + deleting a tree whose width is $iWidth...\n" if 2 <= $self->{_debug};
-      $oTABLE->detach;
-      $oTABLE->delete;
-      } while (@aoTABLE);
-    } # if 0
-
   # Look for the total hit count:
-  my @aoFONT = $oTree->look_down(
-                                 '_tag' => 'font',
-                                 'color' => '#000000',
-                                );
- FONT_TAG:
-  foreach my $oFONT (@aoFONT)
+  my @aoFONTcount = $oTree->look_down(
+                                      '_tag' => 'font',
+                                      'face' => 'arial,verdana,helvetica',
+                                     );
+ COUNT_FONT_TAG:
+  foreach my $oFONT (@aoFONTcount)
     {
     if (ref $oFONT)
       {
       my $sFONT = $oFONT->as_text;
       print STDERR " +   try FONT == $sFONT\n" if 2 <= $self->{_debug};
-      if ($sFONT =~ m!(?:\A|\s)([0-9,]+)\s+matches(?:\s|\Z)!i)
+      if ($sFONT =~ m!\bsearch$WS+returned$WS+([0-9,]+)$WS+results!i)
         {
         my $sCount = $1;
         # print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
         $sCount =~ s!,!!g;
         # print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
         $self->approximate_result_count($sCount);
-        last FONT_TAG;
+        last COUNT_FONT_TAG;
         } # if
       } # if
-    } # foreach $oFONT
-
+    } # foreach COUNT_FONT_TAG
+  $oTree->objectify_text;
   # Find all the results:
-  my @aoTABLE = $oTree->look_down(
-                                  '_tag' => 'table',
-                                  'width' => '100%',
-                                 );
- TABLE_TAG:
-  foreach my $oTABLE (@aoTABLE)
+  my @aoFONT = $oTree->look_down(
+                                 _tag => 'font',
+                                 face => 'arial,verdana',
+                                 size => '-1',
+                                );
+ FONT_TAG:
+  foreach my $oFONT (@aoFONT)
     {
-    next TABLE_TAG unless ref $oTABLE;
-    print STDERR " +   try oTABLE ===", $oTABLE->as_text, "===\n" if 2 <= $self->{_debug};
-    my $oA = $oTABLE->look_down('_tag', 'a',
-                                sub { ref $_[0] && ($_[0]->attr('href') =~ m!/articles/!) },
-                               );
-    # Make sure we have a clickable article ref:
-    next TABLE_TAG unless ref $oA;
+    next FONT_TAG unless ref $oFONT;
+    print STDERR " +   try oFONT ===", $oFONT->as_HTML, "===\n" if (2 <= $self->{_debug});
+    my $oA = $oFONT->look_down('_tag', 'a',
+                               # Make sure we have a clickable article ref:
+                               sub { $_[0]->attr('href') =~ m!/articles/! },
+                              );
+    next FONT_TAG unless ref $oA;
     my $sURL = $oA->attr('href');
+    $oA->deobjectify_text;
     my $sTitle = &strip($oA->as_text);
-    my $oTableSib = $oTABLE->right;
-    my $sDesc = '';
-    my $sDate = '';
-    if (ref $oTableSib)
+    print STDERR " +     found <A>, url=$sURL=\n" if (2 <= $self->{_debug});
+    print STDERR " +              title=$sTitle=\n" if (2 <= $self->{_debug});
+    my $oByline = $oFONT->right->right;
+    my $sSource = '';
+    if (ref $oByline)
       {
-      $sDesc = &strip($oTableSib->as_text);
-      # print STDERR " +     raw sDesc ===", &octalize($sDesc), "===\n" if 2 <= $self->{_debug};
-      if ($sDesc =~ m!(Page\s+\S+),$WS+(.+)\Z!i)
-        {
-        # This is washingtonpost format.  Extract date, keep Page # in
-        # description:
-        $sDesc = '['. $1 .'] ';
-        $sDate = &strip($2);
-        }
-      elsif ($sDesc =~ m!\s*(By\s.+)$WS+(\d+:\d.+)\Z!i)
-        {
-        # This is AP news format, with byline.  Put byline into
-        # description, rest into date:
-        $sDesc = '['. &strip($1) .'] ';
-        $sDate = &strip($2);
-        }
-      elsif ($sDesc =~ m!\s[AP]M\s!i)
-        {
-        # This is AP news format, without byline.  Put whole thing into date:
-        $sDate = $sDesc;
-        $sDesc = '';
-        }
-      $oTableSib = $oTableSib->right;
-      if (ref $oTableSib)
-        {
-        $sDesc .= &strip($oTableSib->as_text);
-        } # if
+      $oByline->deobjectify_text;
+      $sSource = &strip($oByline->as_text);
+      print STDERR " +     found byline=$sSource=\n" if (2 <= $self->{_debug});
       } # if
-
+    else
+      {
+      next FONT_TAG;
+      }
+    my $oDate = $oByline->right->right;
+    my $sDate = '';
+    if (ref $oDate)
+      {
+      $oDate->deobjectify_text;
+      $sDate = &strip($oDate->as_text);
+      print STDERR " +     found date=$sDate=\n" if (2 <= $self->{_debug});
+      } # if
+    else
+      {
+      next FONT_TAG;
+      }
+    my $oDesc = $oDate->right->right;
+    next FONT_TAG unless ref $oDesc;
+    $oDesc->deobjectify_text;
+    my $sDesc = &strip($oDesc->as_text);
     my $hit = new WWW::SearchResult;
     $hit->add_url($sURL);
     $hit->title($sTitle);
     $hit->description($sDesc);
     $hit->change_date($sDate);
+    $hit->source($sSource);
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
     $hits_found++;
-    } # foreach $oTABLE
+    } # foreach FONT_TAG
 
+  $oTree->deobjectify_text;
   # Find the next link, if any:
-  my @aoA = $oTree->look_down('_tag', 'a');
- A_TAG:
-  foreach my $oAnext (@aoA)
+  my @aoFONTnext = $oTree->look_down('_tag', 'font',
+                                     color => '#CC0000',
+                                     face => 'Arial,Verdana',
+                                    );
+ NEXT_FONT_TAG:
+  foreach my $oFONTnext (@aoFONTnext)
     {
-    next A_TAG unless ref $oAnext;
-    print STDERR " +   try oAnext ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
-    my $oIMG = $oAnext->look_down('_tag', 'img');
-    next A_TAG unless ref $oIMG;
-    if ($oAnext->as_text eq 'Next')
+    next NEXT_FONT_TAG unless ref $oFONTnext;
+    print STDERR " +   try oFONTnext ===", $oFONTnext->as_HTML, "===\n" if 2 <= $self->{_debug};
+    if ($oFONTnext->as_text eq 'Next>')
       {
-      print STDERR " +   oAnext is ===", $oAnext->as_HTML, "===\n" if 2 <= $self->{_debug};
-      my $sURL = $oAnext->attr('href');
-      # $sURL =~ s!&_b.\d+=&!&!g;
-      # $sURL =~ s!&_NO_RETURN=1&!&!g;
+      print STDERR " +   oFONTnext is ===", $oFONTnext->as_HTML, "===\n" if 2 <= $self->{_debug};
+      my $sURL = $oFONTnext->attr('href');
       $self->{_next_url} = URI->new_abs($sURL, $self->{'_prev_url'});
-      last A_TAG;
+      last NEXT_FONT_TAG;
       } # if
-    } # foreach $oAnext
+    } # foreach NEXT_FONT_TAG
 
  SKIP_NEXT_LINK:
-
   return $hits_found;
   } # parse_tree
 
@@ -263,8 +244,8 @@ sub parse_tree
 sub strip
   {
   my $s = shift;
-  $s =~ s!\A[\s\240]+!!x;
-  $s =~ s![\s\240]+\Z!!x;
+  $s =~ s!\A$WS+!!x;
+  $s =~ s!$WS+\Z!!x;
   return $s;
   } # strip
 
@@ -275,19 +256,7 @@ sub octalize
   return sprintf "\\%.3lo" x length($s), unpack("C*", $s);
   } # octalize
 
-
 1;
 
 __END__
 
-URL for default GUI search results:
-
-http://www.washingtonpost.com/cgi-bin/search99.pl?searchdatabase=serf&serf_wp=on&wp=on&description=japan+pm+bush&headline=&byline=&page=&_u.16=14
-
-reduced URL for search results:
-
-http://www.washingtonpost.com/cgi-bin/search99.pl?searchdatabase=serf&serf_wp=on&description=japan+pm+bush
-
-http://search1.washingtonpost.com:80?description=Japan&searchdatabase=serf&serf_wp=on&_NO_RETURN=1&_b.11=&_NO_RETURN=1&_b.21=&_NO_RETURN=1&_b.31=&_NO_RETURN=1&_b.41=&_NO_RETURN=1&_b.51=&_NO_RETURN=1&_b.61=&_NO_RETURN=1&_b.71=/
-
-http://search1.washingtonpost.com:80?_g.k_1=japan&_v.7=92&_u.14=1&_u.1=2&_u.2=26&_u.3=2002&_u.4=3&_u.5=11&_u.6=2002&wp=on&ap=&_b.1.x=25&_b.1.y=12/

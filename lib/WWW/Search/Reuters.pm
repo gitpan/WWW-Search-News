@@ -1,14 +1,14 @@
 
-# $Id: AP.pm,v 2.103 2004/05/23 03:15:47 Daddy Exp $
+# $Id: Reuters.pm,v 1.2 2004/05/23 03:15:43 Daddy Exp $
 
 =head1 NAME
 
-WWW::Search::AP - backend for searching AP News at www.washingtonpost.com
+WWW::Search::Reuters - backend for searching Reuters News at www.washingtonpost.com
 
 =head1 SYNOPSIS
 
   use WWW::Search;
-  my $oSearch = new WWW::Search('AP');
+  my $oSearch = new WWW::Search('Reuters');
   my $sQuery = WWW::Search::escape_query("japan prime minister");
   $oSearch->native_query($sQuery);
   while (my $oResult = $oSearch->next_result())
@@ -17,8 +17,8 @@ WWW::Search::AP - backend for searching AP News at www.washingtonpost.com
 =head1 DESCRIPTION
 
 This class is a specialization of WWW::Search.  It handles making and
-interpreting searches on news at The AP section of The Washington Post
-F<http://www.washtech.com>.
+interpreting searches on Reuters news on The Washington
+Post website F<http://www.washingtonpost.com>.
 
 This class exports no public interface; all interaction should
 be done through L<WWW::Search> objects.
@@ -38,7 +38,7 @@ Please tell the author if you find any!
 
 =head1 AUTHOR
 
-C<WWW::Search::AP> is maintained by Martin Thurn
+C<WWW::Search::Reuters> is maintained by Martin Thurn
 (mthurn@cpan.org).
 
 =head1 LEGALESE
@@ -47,19 +47,11 @@ THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
-=head1 VERSION HISTORY
-
-If it is not listed here, then it was not a meaningful nor released revision.
-
-=head2 2.01, 2002-03-12
-
-First public release.
-
 =cut
 
 #####################################################################
 
-package WWW::Search::AP;
+package WWW::Search::Reuters;
 
 use strict;
 use vars qw( @ISA $VERSION $MAINTAINER );
@@ -68,14 +60,14 @@ use WWW::Search::WashPost;
 
 @ISA = qw( WWW::Search::WashPost );
 
-$VERSION = do { my @r = (q$Revision: 2.103 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.2 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 # private
 sub native_setup_search
   {
   my ($self, $sQuery, $rhOptions) = @_;
-  $rhOptions->{'source'} = 'APOnline';
+  $rhOptions->{'source'} = 'Reuters';
   # All further work is done by our superclass, WWW::Search::WashPost:
   $self->SUPER::native_setup_search($sQuery, $rhOptions);
   } # native_setup_search

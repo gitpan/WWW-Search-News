@@ -1,5 +1,5 @@
 
-# $rcs = ' $Id: News.pm,v 1.1 2004/02/07 13:46:52 Daddy Exp Daddy $ ' ;
+# $rcs = ' $Id: News.pm,v 1.2 2004/05/23 01:52:23 Daddy Exp Daddy $ ' ;
 
 =head1 NAME
 
@@ -17,6 +17,7 @@ I also use it to control the version number of the distribution.
 =head1 SEE ALSO
 
   WWW::Search::AP
+  WWW::Search::Reuters
   WWW::Search::WashPost
 
 =head1 AUTHOR
@@ -28,7 +29,7 @@ Martin Thurn
 package WWW::Search::News;
 
 use vars qw( $VERSION );
-$VERSION = '1.06';
+$VERSION = '1.071';
 
 1;
 
