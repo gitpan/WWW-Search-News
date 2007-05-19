@@ -1,3 +1,7 @@
+2007-05-19    <Daddy@C-3PO>
+
+	* lib/WWW/Search/WashPost.pm (parse_tree): fixed to parse new webpage format
+
 2004-06-05  Kingpin  <mthurn@verizon.net>
 
 	* lib/WWW/Search/WashPost.pm (native_setup_search): fixed for new CGI option value for 'source'

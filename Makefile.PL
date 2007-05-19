@@ -1,3 +1,6 @@
+
+# $Id: Makefile.PL,v 1.16 2007/05/09 12:22:38 Daddy Exp $
+
 use inc::Module::Install;
 
 name('WWW-Search-News');
@@ -15,8 +18,7 @@ build_requires('WWW::Search' => 2.534);
 # functions:
 build_requires('WWW::Search::Test' => 2.265);
 
-check_nmake();      # check and download nmake.exe for Win32
-&Makefile->write;
+&WriteAll;
 
 print STDERR <<'ENDNOTE';
 
@@ -27,5 +29,6 @@ As long as you get more than zero results,
 it is safe to install the modules.
 
 ENDNOTE
+
 __END__
 

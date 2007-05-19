@@ -1,7 +1,7 @@
 # WashPost.pm
 # by Martin Thurn
 # Copyright (C) 1996-1998 by USC/ISI
-# $Id: WashPost.pm,v 2.77 2005/02/20 02:42:32 Daddy Exp $
+# $Id: WashPost.pm,v 2.78 2007/05/19 23:49:38 Daddy Exp $
 
 =head1 NAME
 
@@ -64,7 +64,7 @@ use vars qw( @ISA $VERSION $MAINTAINER );
 
 @ISA = qw( WWW::Search );
 
-$VERSION = do { my @r = (q$Revision: 2.77 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.78 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use WWW::Search;
@@ -91,16 +91,18 @@ sub native_setup_search
 
   $self->{_next_to_retrieve} = 0;
   $self->{'_num_hits'} = 0;
-
+  # This is the result page number:
+  $self->{_washpost_cp} = 1;
   if (!defined($self->{_options}))
     {
     # As of 2004-05-22, URL is http://www.washingtonpost.com/ac2/wp-dyn/Search?tab=article_tab&adv=a&keywords=japan&source=APOnline
+    # As of 2007-05, full URL is http://www.washingtonpost.com/ac2/wp-dyn/NewsSearch?sa=as&sd=&ed=&sb=-1&x=0&y=0&st=treasure&blt=&fa_1_pagenavigator=&fa_1_sourcenavigator="The+Washington+Post"&daterange=0&specificMonth=5&specificDay=18&specificYear=2007&FromRangeMonth=3&FromRangeDay=19&FromRangeYear=2007&ToRangeMonth=5&ToRangeDay=18&ToRangeYear=2007&sb2=1
+    # As of 2007-05, simplest URL is http://www.washingtonpost.com/ac2/wp-dyn/NewsSearch?sa=as&st=treasure&fa_1_sourcenavigator="The+Washington+Post"
     $self->{_options} = {
-                         'search_url' => 'http://www.washingtonpost.com/ac2/wp-dyn/Search',
-                         'tab' => 'article_tab',
-                         'keywords' => $sQuery,
-                         'adv' => 'a',
-                         'source' => 'washingtonpost.com',
+                         'search_url' => 'http://www.washingtonpost.com/ac2/wp-dyn/NewsSearch',
+                         'sa' => 'as',
+                         'st' => $sQuery,
+                         'fa_1_sourcenavigator' => q'"The+Washington+Post"',
                         };
     } # if
   my $options_ref = $self->{_options};
@@ -134,7 +136,8 @@ sub parse_tree
   my $hits_found = 0;
   # Look for the total hit count:
   my @aoSPANcount = $oTree->look_down(
-                                      '_tag' => 'span',
+                                      _tag => 'span',
+                                      class => 'returncount1',
                                      );
  COUNT_SPAN_TAG:
   foreach my $oSPAN (@aoSPANcount)
@@ -143,7 +146,7 @@ sub parse_tree
       {
       my $sSPAN = $oSPAN->as_text;
       print STDERR " +   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
-      if ($sSPAN =~ m!\breturned$WS+([0-9,]+)$WS+result!i)
+      if ($sSPAN =~ m!([0-9,]+)$WS+results$WS+found!i)
         {
         my $sCount = $1;
         print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
@@ -154,88 +157,81 @@ sub parse_tree
         } # if
       } # if
     } # foreach COUNT_SPAN_TAG
-  $oTree->objectify_text;
+  # $oTree->objectify_text;
+
   # Find all the results:
   my @aoSPAN = $oTree->look_down(
-                                 _tag => 'span',
-                                 style => 'font-family: Arial; font-size: 13px; font-weight: bold;',
+                                 _tag => 'div',
+                                 class => 'entries',
                                 );
  SPAN_TAG:
   foreach my $oSPAN (@aoSPAN)
     {
     next SPAN_TAG unless ref $oSPAN;
     print STDERR " +   try oSPAN ===", $oSPAN->as_HTML, "===\n" if (2 <= $self->{_debug});
-    my $oA = $oSPAN->look_down('_tag', 'a',
-                               # Make sure we have a clickable article ref:
-                               sub { $_[0]->attr('href') =~ m!/articles/! },
-                              );
+    my $oDIVheadline = $oSPAN->look_down('_tag' => 'div',
+                                         class => 'headline');
+    next SPAN_TAG unless ref $oDIVheadline;
+    my $oA = $oDIVheadline->look_down('_tag' => 'a');
     next SPAN_TAG unless ref $oA;
     my $sURL = $oA->attr('href');
-    $oA->deobjectify_text;
     my $sTitle = &strip($oA->as_text);
     print STDERR " +     found <A>, url=$sURL=\n" if (2 <= $self->{_debug});
     print STDERR " +              title=$sTitle=\n" if (2 <= $self->{_debug});
-    my $oByline = $oSPAN->right->right;
-    my $sSource = '';
-    if (ref $oByline)
-      {
-      $oByline->deobjectify_text;
-      $sSource = &strip($oByline->as_text);
-      print STDERR " +     found byline=$sSource=\n" if (2 <= $self->{_debug});
-      } # if
-    else
-      {
-      next SPAN_TAG;
-      }
-    my $oDate = $oByline->right->right;
-    my $sDate = '';
-    if (ref $oDate)
-      {
-      $oDate->deobjectify_text;
-      $sDate = &strip($oDate->as_text);
-      print STDERR " +     raw    date=$sDate=\n" if (2 <= $self->{_debug});
-      $sDate =~ s!By\s+[^,]+,\s+!!i;
-      print STDERR " +     cooked date=$sDate=\n" if (2 <= $self->{_debug});
-      } # if
-    else
-      {
-      next SPAN_TAG;
-      }
-    my $oDesc = $oDate->right->right;
-    next SPAN_TAG unless ref $oDesc;
-    $oDesc->deobjectify_text;
-    my $sDesc = &strip($oDesc->as_text);
     my $hit = new WWW::SearchResult;
     $hit->add_url($sURL);
     $hit->title($sTitle);
-    $hit->description($sDesc);
-    $hit->change_date($sDate);
-    $hit->source($sSource);
+    my $oDIVdate = $oSPAN->look_down('_tag' => 'div',
+                                     class => 'dateText');
+    if (ref($oDIVdate))
+      {
+      $hit->change_date($oDIVdate->as_text);
+      } # if
+    my $oDIVdesc = $oSPAN->look_down('_tag' => 'div',
+                                     class => 'blurbNoHighlight');
+    if (ref($oDIVdesc))
+      {
+      $hit->description($oDIVdesc->as_text);
+      } # if
+    my $oDIVbyline = $oSPAN->look_down('_tag' => 'div',
+                                       class => 'returnbyline');
+    if (ref($oDIVbyline))
+      {
+      my $s = $oDIVbyline->as_text;
+      if ($s =~ m!\((.+)\)!)
+        {
+        $hit->source($1);
+        } # if
+      } # if
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
     $hits_found++;
     } # foreach SPAN_TAG
 
-  $oTree->deobjectify_text;
-  # Find the next link, if any:
-  my @aoFONTnext = $oTree->look_down('_tag', 'font',
-                                     color => '#CC0000',
-                                     face => 'Arial,Verdana',
-                                    );
- NEXT_FONT_TAG:
-  foreach my $oFONTnext (@aoFONTnext)
-    {
-    next NEXT_FONT_TAG unless ref $oFONTnext;
-    print STDERR " +   try oFONTnext ===", $oFONTnext->as_HTML, "===\n" if 2 <= $self->{_debug};
-    if ($oFONTnext->as_text eq 'Next>')
-      {
-      print STDERR " +   oFONTnext is ===", $oFONTnext->as_HTML, "===\n" if 2 <= $self->{_debug};
-      my $sURL = $oFONTnext->attr('href');
-      $self->{_next_url} = URI->new_abs($sURL, $self->{'_prev_url'});
-      last NEXT_FONT_TAG;
-      } # if
-    } # foreach NEXT_FONT_TAG
+  # This is the next-page URL:
+  # http://www.washingtonpost.com/ac2/wp-dyn/NewsSearch?st=treasure&fn=&sfn=&sa=np&cp=2&hl=false&sb=-1&sd=&ed=&blt=&fa_1_sourcenavigator="The+Washington+Post"
+  # The page uses JavaScript to fill-in and submit the form.  In order
+  # to do it mechanically, we need to keep track of what page we're on
+  # and put that number in cp, along with sa=np
 
+  # Find the next link, if any:
+  my $oNext = $oTree->look_down('_tag', 'span',
+                                style => 'padding-left:4px;',
+                               );
+  if (ref($oNext))
+    {
+    my $oAnext = $oNext->look_down(_tag => 'a');
+    if (ref($oAnext))
+      {
+      # Sanity check:
+      if ($oAnext->as_text eq 'Next>')
+        {
+        $self->{_options}->{sa} = 'np';
+        $self->{_options}->{cp} = ++$self->{_washpost_cp};
+        $self->{_next_url} = $self->{_options}{'search_url'} .'?'. $self->hash_to_cgi_string($self->{_options});
+        } # if
+      } # if
+    } # if
  SKIP_NEXT_LINK:
   return $hits_found;
   } # parse_tree

@@ -1,5 +1,5 @@
 
-# $rcs = ' $Id: News.pm,v 1.5 2005/02/20 02:45:35 Daddy Exp $ ' ;
+# $rcs = ' $Id: News.pm,v 1.6 2007/05/19 23:50:34 Daddy Exp $ ' ;
 
 =head1 NAME
 
@@ -29,7 +29,7 @@ Martin Thurn
 package WWW::Search::News;
 
 use vars qw( $VERSION );
-$VERSION = '1.073';
+$VERSION = '1.074';
 
 1;
 

@@ -1,3 +1,6 @@
+
+# $Id: ap.t,v 1.10 2007/05/19 22:16:50 Daddy Exp $
+
 use ExtUtils::testlib;
 use Test::More no_plan;
 
@@ -19,7 +22,8 @@ TODO:
   # This query sometimes (rarely) returns 1 page of results:
   diag("Sending 1-page AP query to washingtonpost.com...");
   $iDebug = 0;
-  &tm_run_test('normal', 'goose', 1, 9, $iDebug);
+  $iDump = 0;
+  &tm_run_test('normal', 'turtle', 1, 9, $iDebug, $iDump);
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -33,7 +37,7 @@ foreach my $oResult (@ao)
          'result description is not empty');
   cmp_ok($oResult->change_date, 'ne', '',
          'result change_date is not empty');
-  is($oResult->source, '(Associated Press)', 'source is AP');
+  like($oResult->source, qr'AP', 'result source is AP');
   } # foreach
 # goto MULTI_RESULT;
 
