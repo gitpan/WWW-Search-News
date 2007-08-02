@@ -22,7 +22,8 @@ TODO:
   # This query sometimes (rarely) returns 1 page of results:
   diag("Sending 1-page Reuters query to washingtonpost.com...");
   $iDebug = 0;
-  &my_test('normal', 'crane', 1, 9, $iDebug);
+  $iDump = 0;
+  &my_test('normal', 'turtle', 1, 9, $iDebug, $iDump);
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -38,7 +39,7 @@ foreach my $oResult (@ao)
          'result change_date is not empty');
   is($oResult->source, 'Reuters', 'source is Reuters');
   } # foreach
-# goto MULTI_RESULT;
+# goto SKIP_MULTI_RESULT;
 
 MULTI_RESULT:
 ;
@@ -51,7 +52,8 @@ TODO:
   # This query returns MANY pages of results:
   &my_test('normal', 'Japan', 11, undef, $iDebug, $iDump);
   } # end of TODO block
-
+SKIP_MULTI_RESULT:
+;
 exit 0;
 
 sub my_engine
