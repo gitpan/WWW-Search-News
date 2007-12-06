@@ -1,11 +1,13 @@
 --- 
-author: Martin Thurn <mthurn@cpan.org>
+author: 
+  - Martin Thurn <mthurn@cpan.org>
 build_requires: 
   Test::More: 0
+  Test::Pod: 0
   WWW::Search: 2.534
   WWW::Search::Test: 2.265
 distribution_type: module
-generated_by: Module::Install version 0.67
+generated_by: Module::Install version 0.68
 license: perl
 meta-spec: 
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
@@ -18,4 +20,4 @@ no_index:
 requires: 
   URI: 0
   perl: 5.005
-version: 1.075
+version: 1.076

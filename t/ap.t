@@ -1,5 +1,5 @@
 
-# $Id: ap.t,v 1.10 2007/05/19 22:16:50 Daddy Exp $
+# $Id: ap.t,v 1.11 2007/12/06 02:11:08 Daddy Exp $
 
 use ExtUtils::testlib;
 use Test::More no_plan;
@@ -18,12 +18,13 @@ diag("Sending 0-page AP query to washingtonpost.com...");
 # goto MULTI_RESULT;
 TODO:
   {
-  local $TODO = q{too hard to find a reliable one-page query};
+  $TODO = q{too hard to find a reliable one-page query};
   # This query sometimes (rarely) returns 1 page of results:
   diag("Sending 1-page AP query to washingtonpost.com...");
   $iDebug = 0;
   $iDump = 0;
   &tm_run_test('normal', 'turtle', 1, 9, $iDebug, $iDump);
+  $TODO = '';
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -43,15 +44,11 @@ foreach my $oResult (@ao)
 
 MULTI_RESULT:
 ;
-TODO:
-  {
-  # local $TODO = q{www.washingtonpost.com's 'Next' button is broken};
-  diag("Sending multi-page AP query to washingtonpost.com...");
-  $iDebug = 0;
-  $iDump = 0;
-  # This query returns MANY pages of results:
-  &tm_run_test('normal', 'Japan', 11, undef, $iDebug, $iDump);
-  } # end of TODO block
+diag("Sending multi-page AP query to washingtonpost.com...");
+$iDebug = 0;
+$iDump = 0;
+# This query returns MANY pages of results:
+&tm_run_test('normal', 'Japan', 11, undef, $iDebug, $iDump);
 
 exit 0;
 

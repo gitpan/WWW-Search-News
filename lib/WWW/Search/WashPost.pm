@@ -134,35 +134,36 @@ sub parse_tree
   my $self = shift;
   my $oTree = shift;
   my $hits_found = 0;
-  # Look for the total hit count:
-  my @aoSPANcount = $oTree->look_down(
-                                      _tag => 'span',
-                                      class => 'returncount1',
-                                     );
- COUNT_SPAN_TAG:
-  foreach my $oSPAN (@aoSPANcount)
+  if (! $self->approximate_hit_count)
     {
-    if (ref $oSPAN)
+    # Look for the total hit count:
+    my $oSPANcount = $oTree->look_down(
+                                       _tag => 'span',
+                                       id => 'currentResults',
+                                      );
+    if (ref $oSPANcount)
       {
-      my $sSPAN = $oSPAN->as_text;
-      print STDERR " +   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
-      if ($sSPAN =~ m!([0-9,]+)$WS+results$WS+found!i)
+      my $oSPAN = $oSPANcount->parent;
+      if (ref $oSPAN)
         {
-        my $sCount = $1;
-        print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
-        $sCount =~ s!,!!g;
-        # print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
-        $self->approximate_result_count($sCount);
-        last COUNT_SPAN_TAG;
+        my $sSPAN = $oSPAN->as_text;
+        print STDERR " +   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
+        if ($sSPAN =~ m!$WS of$WS+([0-9,]+)$WS+results!ix)
+          {
+          my $sCount = $1;
+          print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
+          $sCount =~ s!,!!g;
+          # print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
+          $self->approximate_result_count($sCount);
+          } # if
         } # if
       } # if
-    } # foreach COUNT_SPAN_TAG
-  # $oTree->objectify_text;
+    } # if need hit count
 
   # Find all the results:
   my @aoSPAN = $oTree->look_down(
                                  _tag => 'div',
-                                 class => 'entries',
+                                 class => 'resultBlock',
                                 );
  SPAN_TAG:
   foreach my $oSPAN (@aoSPAN)
@@ -170,7 +171,8 @@ sub parse_tree
     next SPAN_TAG unless ref $oSPAN;
     print STDERR " +   try oSPAN ===", $oSPAN->as_HTML, "===\n" if (2 <= $self->{_debug});
     my $oDIVheadline = $oSPAN->look_down('_tag' => 'div',
-                                         class => 'headline');
+                                         class => 'resultDisplay',
+                                        );
     next SPAN_TAG unless ref $oDIVheadline;
     my $oA = $oDIVheadline->look_down('_tag' => 'a');
     next SPAN_TAG unless ref $oA;
@@ -181,27 +183,32 @@ sub parse_tree
     my $hit = new WWW::SearchResult;
     $hit->add_url($sURL);
     $hit->title($sTitle);
-    my $oDIVdate = $oSPAN->look_down('_tag' => 'div',
-                                     class => 'dateText');
+    $oA->detach;
+    $oA->delete;
+    my $oDIVdate = $oSPAN->look_down('_tag' => 'p',
+                                     class => 'kicker',
+                                    );
     if (ref($oDIVdate))
       {
-      $hit->change_date($oDIVdate->as_text);
+      my $s = $oDIVdate->as_text;
+      $s =~ s!\A.+\|\s+!!;
+      $hit->change_date($s);
       } # if
-    my $oDIVdesc = $oSPAN->look_down('_tag' => 'div',
-                                     class => 'blurbNoHighlight');
+    $oDIVdate->detach;
+    $oDIVdate->delete;
+    my $oDIVdesc = $oSPAN->look_down('_tag' => 'p',
+                                     class => 'teaser',
+                                    );
     if (ref($oDIVdesc))
       {
       $hit->description($oDIVdesc->as_text);
       } # if
-    my $oDIVbyline = $oSPAN->look_down('_tag' => 'div',
-                                       class => 'returnbyline');
-    if (ref($oDIVbyline))
+    $oDIVdesc->detach;
+    $oDIVdesc->delete;
+    my $s = $oSPAN->as_text;
+    if ($s =~ m!\((.+)\)!)
       {
-      my $s = $oDIVbyline->as_text;
-      if ($s =~ m!\((.+)\)!)
-        {
-        $hit->source($1);
-        } # if
+      $hit->source($1);
       } # if
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
@@ -215,14 +222,19 @@ sub parse_tree
   # and put that number in cp, along with sa=np
 
   # Find the next link, if any:
-  my $oNext = $oTree->look_down('_tag', 'span',
-                                style => 'padding-left:4px;',
+  my $oNext = $oTree->look_down('_tag', 'div',
+                                class => 'pagination',
                                );
   if (ref($oNext))
     {
-    my $oAnext = $oNext->look_down(_tag => 'a');
+    my $s = $oNext->as_HTML;
+    print STDERR " DDD oNext is =$s=\n" if (2 <= $self->{_debug});
+    my @aoAnext = $oNext->look_down(_tag => 'a');
+    my $oAnext = pop @aoAnext;
     if (ref($oAnext))
       {
+      my $s = $oAnext->as_HTML;
+      print STDERR " DDD   try oANext is =$s=\n" if (2 <= $self->{_debug});
       # Sanity check:
       if ($oAnext->as_text eq 'Next>')
         {

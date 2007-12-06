@@ -10,6 +10,7 @@ license('perl');
 
 requires(perl => 5.005);  # only because Module::Install does
 build_requires('Test::More');
+build_recommends('Test::Pod');
 requires('URI');
 # We need the version of WWW::Search that has the agent_email()
 # method:
