@@ -1,9 +1,9 @@
 
-# $rcs = ' $Id: News.pm,v 1.8 2007/12/06 03:28:47 Daddy Exp $ ' ;
+# $rcs = ' $Id: News.pm,v 1.10 2008/05/06 02:17:38 Martin Exp $ ' ;
 
 =head1 NAME
 
-WWW::Search::News
+WWW::Search::News - WWW::Search backend for news searches
 
 =head1 DESCRIPTION
 
@@ -22,16 +22,23 @@ I also use it to control the version number of the distribution.
 
 =head1 AUTHOR
 
-Martin Thurn
+Martin Thurn <mthurn@cpan.org>
+
+=head1 LICENSE
+
+This software is released under the same license as Perl itself.
 
 =cut
 
 package WWW::Search::News;
 
 use strict;
+use warnings;
+
+use 5.005;
 
 our
-$VERSION = '1.076';
+$VERSION = '1.077';
 
 1;
 

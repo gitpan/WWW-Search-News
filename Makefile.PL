@@ -1,16 +1,11 @@
 
-# $Id: Makefile.PL,v 1.16 2007/05/09 12:22:38 Daddy Exp $
+# $Id: Makefile.PL,v 1.17 2008/05/06 02:17:37 Martin Exp $
 
 use inc::Module::Install;
 
-name('WWW-Search-News');
-version_from('lib/WWW/Search/News.pm');
-author('Martin Thurn <mthurn@cpan.org>');
-license('perl');
+all_from('lib/WWW/Search/News.pm');
 
-requires(perl => 5.005);  # only because Module::Install does
 build_requires('Test::More');
-build_recommends('Test::Pod');
 requires('URI');
 # We need the version of WWW::Search that has the agent_email()
 # method:

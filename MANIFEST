@@ -16,6 +16,7 @@ MANIFEST			This list of files
 META.yml
 README
 t/ap.t
+t/pod-coverage.t
 t/pod.t
 t/reuters.t
 t/washpost.t

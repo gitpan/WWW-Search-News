@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 2.105 2007/05/19 23:49:38 Daddy Exp $
+# $Id: AP.pm,v 2.107 2008/05/06 02:59:06 Martin Exp $
 
 =head1 NAME
 
@@ -37,38 +37,34 @@ Please tell the author if you find any!
 
 =head1 AUTHOR
 
-C<WWW::Search::AP> is maintained by Martin Thurn
-(mthurn@cpan.org).
+Martin Thurn <mthurn@cpan.org>
 
-=head1 LEGALESE
+=head1 LICENSE
 
-THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+This software is released under the same license as Perl itself.
 
 =cut
-
-#####################################################################
 
 package WWW::Search::AP;
 
 use strict;
+use warnings;
 
 use base 'WWW::Search::WashPost';
 
 use vars qw( $VERSION $MAINTAINER );
 
-$VERSION = do { my @r = (q$Revision: 2.105 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.107 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 # private
-sub native_setup_search
+sub _native_setup_search
   {
   my ($self, $sQuery, $rhOptions) = @_;
   $rhOptions->{'fa_1_sourcenavigator'} = 'AP';
   # All further work is done by our superclass, WWW::Search::WashPost:
-  $self->SUPER::native_setup_search($sQuery, $rhOptions);
-  } # native_setup_search
+  $self->SUPER::_native_setup_search($sQuery, $rhOptions);
+  } # _native_setup_search
 
 1;
 

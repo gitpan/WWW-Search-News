@@ -1,3 +1,7 @@
+2008-05-05    <Martin@BLUEMAX>
+
+	* lib/WWW/Search/WashPost.pm (_parse_tree): fixed for new HTML page format
+
 2007-05-19    <Daddy@C-3PO>
 
 	* lib/WWW/Search/WashPost.pm (parse_tree): fixed to parse new webpage format

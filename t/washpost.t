@@ -15,14 +15,15 @@ diag("Sending 0-page query to washingtonpost.com...");
 &tm_run_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
 # goto MULTI_RESULT;
 DETAIL_RESULTS:
-;
+pass;
 TODO:
   {
   local $TODO = q{too hard to find a reliable one-page query};
   diag("Sending 1-page query to washingtonpost.com...");
+  $iDump = 0;
   $iDebug = 0;
-  # This query usually returns 1 page of results:
-  &tm_run_test('normal', '"sea turtle"', 1, 9, $iDebug);
+  # This query sometimes returns 1 page of results:
+  &tm_run_test('normal', 'delle', 1, 9, $iDebug, $iDump);
   } # end of TODO block
 my @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -36,6 +37,10 @@ foreach my $oResult (@ao)
          'result description is not empty');
   cmp_ok($oResult->change_date, 'ne', '',
          'result change_date is not empty');
+  cmp_ok($oResult->seller, 'ne', '',
+         'result seller is not empty');
+  cmp_ok($oResult->location, 'ne', '',
+         'result location is not empty');
   like($oResult->source,
        qr{(?i:POST|EDITION)},
        'source is Post');
@@ -43,11 +48,12 @@ foreach my $oResult (@ao)
 
 MULTI_RESULT:
 diag("Sending multi-page query to washingtonpost.com...");
+$iDump = 0;
 $iDebug = 0;
 # This query usually returns many of pages of results:
-tm_run_test('normal', 'Bush', 21, undef, $iDebug);
+tm_run_test('normal', 'Bush', 21, undef, $iDebug, $iDump);
 SKIP_MULTI_RESULT:
-;
+pass;
 exit 0;
 
 __END__
