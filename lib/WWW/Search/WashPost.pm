@@ -1,5 +1,5 @@
 
-# $Id: WashPost.pm,v 2.80 2008/05/06 02:55:24 Martin Exp $
+# $Id: WashPost.pm,v 2.81 2009/01/05 03:33:16 Martin Exp $
 
 =head1 NAME
 
@@ -81,7 +81,7 @@ use base 'WWW::Search';
 use WWW::SearchResult;
 
 our
-$VERSION = do { my @r = (q$Revision: 2.80 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.81 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 our $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 sub _native_setup_search
@@ -158,13 +158,13 @@ sub _parse_tree
     if (ref $oSPAN)
       {
       my $sSPAN = $oSPAN->as_text;
-      print STDERR " +   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
+      print STDERR " DDD   try SPANcount == $sSPAN\n" if 2 <= $self->{_debug};
       if ($sSPAN =~ m!([0-9,]+)$WS+results!i)
         {
         my $sCount = $1;
-        print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
+        print STDERR " DDD     raw    count == $sCount\n" if 2 <= $self->{_debug};
         $sCount =~ s!,!!g;
-        # print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
+        # print STDERR " DDD     cooked count == $sCount\n" if 2 <= $self->{_debug};
         $self->approximate_result_count($sCount);
         last COUNT_SPAN_TAG;
         } # if
@@ -181,7 +181,7 @@ sub _parse_tree
   foreach my $oSPAN (@aoSPAN)
     {
     next SPAN_TAG unless ref $oSPAN;
-    print STDERR " +   try oSPAN ===", $oSPAN->as_HTML, "===\n" if (2 <= $self->{_debug});
+    print STDERR " DDD   try oSPAN ===", $oSPAN->as_HTML, "===\n" if (2 <= $self->{_debug});
     my $oDIVheadline = $oSPAN->look_down('_tag' => 'h2',
                                         );
     next SPAN_TAG unless ref $oDIVheadline;
@@ -189,8 +189,10 @@ sub _parse_tree
     next SPAN_TAG unless ref $oA;
     my $sURL = $oA->attr('href');
     my $sTitle = _strip($oA->as_text);
-    print STDERR " +     found <A>, url=$sURL=\n" if (2 <= $self->{_debug});
-    print STDERR " +              title=$sTitle=\n" if (2 <= $self->{_debug});
+    print STDERR " DDD     found <A>, url=$sURL=\n" if (2 <= $self->{_debug});
+    print STDERR " DDD              title=$sTitle=\n" if (2 <= $self->{_debug});
+    $oA->detach;
+    $oA->delete;
     my $hit = new WWW::SearchResult;
     $hit->add_url($sURL);
     $hit->title($sTitle);
@@ -207,29 +209,43 @@ sub _parse_tree
         my $sDate = $2;
         $hit->change_date($sDate);
         } # if
+      $oDIVdate->detach;
+      $oDIVdate->delete;
       } # if
     my $oDIVdesc = $oSPAN->look_down('_tag' => 'p',
                                      class => 'teaser');
     if (ref($oDIVdesc))
       {
       $hit->description($oDIVdesc->as_text);
+      $oDIVdesc->detach;
+      $oDIVdesc->delete;
       } # if
     my $oDIVbyline = $oSPAN->look_down('_tag' => 'p',
                                        class => 'stamp',
                                       );
+    my $sByline = '';
     if (ref($oDIVbyline))
       {
-      my $s = $oDIVbyline->as_text;
-      if ($s =~ m!\((.+)\)!)
-        {
-        $hit->source($1);
-        } # if
-      if ($s =~ m/\A(.+), (\S+)/)
-        {
-        $hit->seller($1);
-        $hit->location($2);
-        }
+      $sByline = $oDIVbyline->as_text;
       } # if
+    else
+      {
+      $sByline = $oSPAN->as_text;
+      }
+    print STDERR " DDD     try sByline ==$sByline==\n" if 2 <= $self->{_debug};
+    if ($sByline =~ m!\((.+)\)!)
+      {
+      $hit->source($1);
+      } # if
+    if ($sByline =~ m/\A(.+), (\S+)/)
+      {
+      $hit->seller($1);
+      $hit->location($2);
+      }
+    if ($sByline =~ m/\b([A-Z][0-9]{1,3})\b/)
+      {
+      $hit->location($1);
+      }
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
     $hits_found++;
