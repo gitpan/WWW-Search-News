@@ -1,5 +1,5 @@
 
-# $rcs = ' $Id: News.pm,v 1.11 2009/01/05 03:33:50 Martin Exp $ ' ;
+# $rcs = ' $Id: News.pm,v 1.13 2009/05/02 19:27:46 Martin Exp $ ' ;
 
 =head1 NAME
 
@@ -26,6 +26,8 @@ Martin Thurn <mthurn@cpan.org>
 
 =head1 LICENSE
 
+Copyright (C) 1998-2009 Martin 'Kingpin' Thurn
+
 This software is released under the same license as Perl itself.
 
 =cut
@@ -38,7 +40,7 @@ use warnings;
 use 5.005;
 
 our
-$VERSION = '1.078';
+$VERSION = '1.079';
 
 1;
 

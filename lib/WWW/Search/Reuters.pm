@@ -1,5 +1,5 @@
 
-# $Id: Reuters.pm,v 1.8 2008/05/06 02:59:06 Martin Exp $
+# $Id: Reuters.pm,v 1.9 2009/05/02 13:28:24 Martin Exp $
 
 =head1 NAME
 
@@ -41,6 +41,8 @@ Martin Thurn <mthurn@cpan.org>
 
 =head1 LICENSE
 
+Copyright (C) 1998-2009 Martin 'Kingpin' Thurn
+
 This software is released under the same license as Perl itself.
 
 =cut
@@ -53,7 +55,7 @@ use warnings;
 use base 'WWW::Search::WashPost';
 
 our
-$VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.9 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 our $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 # private

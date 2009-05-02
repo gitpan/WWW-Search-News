@@ -1,5 +1,5 @@
 
-# $Id: AP.pm,v 2.107 2008/05/06 02:59:06 Martin Exp $
+# $Id: AP.pm,v 2.108 2009/05/02 13:28:24 Martin Exp $
 
 =head1 NAME
 
@@ -41,6 +41,8 @@ Martin Thurn <mthurn@cpan.org>
 
 =head1 LICENSE
 
+Copyright (C) 1998-2009 Martin 'Kingpin' Thurn
+
 This software is released under the same license as Perl itself.
 
 =cut
@@ -54,7 +56,7 @@ use base 'WWW::Search::WashPost';
 
 use vars qw( $VERSION $MAINTAINER );
 
-$VERSION = do { my @r = (q$Revision: 2.107 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.108 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 # private

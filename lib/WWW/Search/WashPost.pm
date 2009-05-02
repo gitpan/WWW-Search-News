@@ -1,5 +1,5 @@
 
-# $Id: WashPost.pm,v 2.81 2009/01/05 03:33:16 Martin Exp $
+# $Id: WashPost.pm,v 2.83 2009/05/02 19:26:53 Martin Exp $
 
 =head1 NAME
 
@@ -68,6 +68,8 @@ Martin Thurn <mthurn@cpan.org>
 
 =head1 LICENSE
 
+Copyright (C) 1998-2009 Martin 'Kingpin' Thurn
+
 This software is released under the same license as Perl itself.
 
 =cut
@@ -81,7 +83,7 @@ use base 'WWW::Search';
 use WWW::SearchResult;
 
 our
-$VERSION = do { my @r = (q$Revision: 2.81 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 2.83 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 our $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 sub _native_setup_search
@@ -242,7 +244,7 @@ sub _parse_tree
       $hit->seller($1);
       $hit->location($2);
       }
-    if ($sByline =~ m/\b([A-Z][0-9]{1,3})\b/)
+    if ($sByline =~ m/\b([A-Z]{1,2}[0-9]{1,3})\b/)
       {
       $hit->location($1);
       }
